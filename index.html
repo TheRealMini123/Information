@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>IP Address</title>
+    <style>
+      /* Body styling with a gradient background */
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        overflow-x: hidden;
+        background: linear-gradient(
+          to bottom right,
+          #a8c0ff,
+          #3f4c6b
+        ); /* Gradient background */
+        color: #fff;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      h1 {
+        color: #fff;
+        font-size: 2rem;
+        text-align: center;
+        margin-bottom: 20px;
+      }
+
+      #geo-info {
+        margin-top: 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        background: rgba(
+          0,
+          0,
+          0,
+          0.6
+        ); /* Semi-transparent background for the info section */
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.3);
+      }
+
+      .info {
+        margin: 8px 0;
+        font-size: 5rem; /* Adjusted for large text but smaller than before */
+        word-wrap: break-word;
+        text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3); /* Subtle text shadow */
+      }
+
+      @media (max-width: 768px) {
+        h1 {
+          font-size: 2.5rem;
+        }
+        .info {
+          font-size: 3rem;
+        }
+      }
+
+      @media (max-width: 480px) {
+        h1 {
+          font-size: 2rem;
+        }
+        .info {
+          font-size: 2rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="geo-info">
+      <h1>Your Information:</h1>
+      <div class="info">
+        IP Address: <span id="ip-address">Loading...</span>
+      </div>
+      <div class="info">Location: <span id="location">Loading...</span></div>
+      <div class="info">Country: <span id="country">Loading...</span></div>
+      <div class="info">City: <span id="city">Loading...</span></div>
+      <div class="info">Latitude: <span id="latitude">Loading...</span></div>
+      <div class="info">Longitude: <span id="longitude">Loading...</span></div>
+    </div>
+
+    <script>
+      // Fetch user's IP address and geolocation info using ipinfo.io API
+      fetch("https://ipinfo.io/json?token=1cf4ed27955917") // Replace YOUR_API_TOKEN with a valid token
+        .then((response) => response.json())
+        .then((data) => {
+          // Display the IP address and location info
+          document.getElementById("ip-address").innerText = data.ip || "N/A";
+          document.getElementById("location").innerText = data.loc || "N/A";
+          document.getElementById("country").innerText = data.country || "N/A";
+          document.getElementById("city").innerText = data.city || "N/A";
+          const [latitude, longitude] = data.loc
+            ? data.loc.split(",")
+            : ["N/A", "N/A"];
+          document.getElementById("latitude").innerText = latitude;
+          document.getElementById("longitude").innerText = longitude;
+        })
+        .catch((error) => {
+          console.error("Error fetching IP info:", error);
+          document.getElementById("ip-address").innerText =
+            "Unable to fetch IP info";
+        });
+
+      // Geolocation via navigator.geolocation
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          function (position) {
+            // Display geolocation data
+            const latitude = position.coords.latitude;
+            const longitude = position.coords.longitude;
+            document.getElementById("latitude").innerText = latitude;
+            document.getElementById("longitude").innerText = longitude;
+            // Fetch reverse geolocation (city and country)
+            fetch(
+              `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`
+            )
+              .then((response) => response.json())
+              .then((data) => {
+                document.getElementById("city").innerText = data.city || "N/A";
+                document.getElementById("country").innerText =
+                  data.countryName || "N/A";
+              })
+              .catch((error) =>
+                console.error("Error fetching location:", error)
+              );
+          },
+          function (error) {
+            console.error("Geolocation error:", error);
+            document.getElementById("latitude").innerText =
+              "Unable to fetch latitude";
+            document.getElementById("longitude").innerText =
+              "Unable to fetch longitude";
+          }
+        );
+      } else {
+        alert("Your Browser Is Not Supported For This Website.");
+      }
+    </script>
+  </body>
+</html>
